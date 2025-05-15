@@ -22,6 +22,33 @@ The application uses Protect.js to encrypt sensitive user data (email addresses)
 - Bulk decryption of encrypted data
 - Secure API routes for data insertion
 
+### Implementation Requirements
+
+When implementing Protect.js in your own application, there are several key requirements to note:
+
+1. **Server-Side Data Handling**
+
+   - All encryption/decryption must be performed server-side
+   - Use `getServerSideProps` for fetching and decrypting data ([example in `src/pages/index.tsx`](src/pages/index.tsx))
+   - Create API routes for handling data insertion with encryption ([example in `src/pages/api/users.ts`](src/pages/api/users.ts))
+
+2. **Type Safety**
+
+   - Implement Zod schemas to validate encrypted and decrypted data ([example in `src/lib/data.ts`](src/lib/data.ts))
+   - Define separate schemas for encrypted and decrypted data structures
+   - Use TypeScript types to ensure type safety throughout the application
+
+3. **Database Integration**
+
+   - Store both plaintext and encrypted versions of sensitive data
+   - Use bulk decryption for efficient data retrieval ([example in `src/lib/data.ts`](src/lib/data.ts))
+   - Implement proper error handling for encryption/decryption operations
+
+4. **Security Best Practices**
+   - Never expose encryption/decryption logic to the client
+   - Use API routes for all data modification operations ([example in `src/pages/api/users.ts`](src/pages/api/users.ts))
+   - Implement proper error handling and validation
+
 ### Database Integration
 
 The application uses Supabase as its database backend:
