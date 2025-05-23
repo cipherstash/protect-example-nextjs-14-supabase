@@ -70,7 +70,7 @@ The application uses Supabase as its database backend:
    CS_CLIENT_ID=
    CS_CLIENT_KEY=
    CS_CLIENT_ACCESS_KEY=
-   CS_WORKSPACE_ID=
+   CS_WORKSPACE_CRN=
    ```
 4. Run the development server:
    ```bash

@@ -32,6 +32,7 @@ interface HomeProps {
 export default function Home({ users: initialUsers }: HomeProps) {
   const [users, setUsers] = useState(initialUsers)
   const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -49,7 +50,7 @@ export default function Home({ users: initialUsers }: HomeProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, name }),
       })
 
       if (!response.ok) {
@@ -60,6 +61,7 @@ export default function Home({ users: initialUsers }: HomeProps) {
       const newUser = await response.json()
       setUsers([...users, newUser])
       setEmail('')
+      setName('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create user')
     } finally {
@@ -74,6 +76,14 @@ export default function Home({ users: initialUsers }: HomeProps) {
           <h2 className="text-xl font-bold mb-4">Add User</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter name"
+                className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700 mb-2"
+                required
+              />
               <input
                 type="email"
                 value={email}

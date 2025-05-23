@@ -1,5 +1,6 @@
 import { csColumn, csTable } from '@cipherstash/protect'
 
 export const users = csTable('users', {
-  email_encrypted: csColumn('email_encrypted').equality(),
+  email: csColumn('email').equality().freeTextSearch().orderAndRange(),
+  name: csColumn('name').equality().freeTextSearch().orderAndRange(),
 })

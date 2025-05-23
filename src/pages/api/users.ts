@@ -1,3 +1,4 @@
+import { modelToEncryptedPgComposites } from '@cipherstash/protect'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { users } from '@/protect/schema'
 import { protectClient } from '@/protect'
@@ -16,24 +17,31 @@ export default async function handler(
   }
 
   try {
-    const { email } = req.body
+    // Extract email from request body
+    const { email, name } = req.body
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' })
     }
 
-    const result = await protectClient.encrypt(email, {
-      table: users,
-      column: users.email_encrypted,
-    })
+    const user = {
+      email,
+      name,
+    }
 
+    // Encrypt the email using CipherStash Protect
+    const result = await protectClient.encryptModel(user, users)
+
+    // You will always need to handle encryption failure
     if (result.failure) {
       return res.status(500).json({ error: result.failure })
     }
 
+    // Insert the user into the database with both plain and encrypted email
+    // for example purposes.
     const { data, error } = await supabase
       .from('users')
-      .insert([{ email, email_encrypted: result.data }])
+      .insert([modelToEncryptedPgComposites(result.data)])
       .select()
       .single()
 
@@ -41,7 +49,8 @@ export default async function handler(
       return res.status(500).json({ error })
     }
 
-    return res.status(201).json(data)
+    // Return the created user data
+    return res.status(200).json(data)
   } catch (error) {
     console.error('Error creating user:', error)
     return res.status(500).json({ error: 'Internal server error' })

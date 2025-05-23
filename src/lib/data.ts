@@ -2,17 +2,18 @@ import { protectClient } from '@/protect'
 import { supabase } from './supabase'
 import { z } from 'zod'
 import type { EncryptedPayload } from '@cipherstash/protect'
+import { users } from '@/protect/schema'
 
 const encryptedUserSchema = z.object({
   id: z.number(),
-  email: z.string(),
-  email_encrypted: z.custom<EncryptedPayload>(),
+  email: z.custom<EncryptedPayload>(),
+  name: z.custom<EncryptedPayload>(),
 })
 
 const decryptedUserSchema = z.object({
   id: z.number(),
   email: z.string(),
-  email_encrypted: z.string(),
+  name: z.string(),
 })
 
 export type EncryptedUser = z.infer<typeof encryptedUserSchema>
@@ -26,7 +27,19 @@ export type DecryptedUser = z.infer<typeof decryptedUserSchema>
 // Using a schema parser is optional, but it is recommended to maintain type safety.
 export async function getUsers(): Promise<DecryptedUser[]> {
   try {
-    const { data, error } = await supabase.from('users').select()
+    // TODO: Implement searching for a user by email
+    // const searchResult = await protectClient.encrypt('billy@mycompany.com', {
+    //   column: users.email,
+    //   table: users,
+    // })
+
+    // if (searchResult.failure) {
+    //   throw new Error(searchResult.failure.message)
+    // }
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, email::jsonb, name::jsonb')
 
     if (error) {
       throw new Error(error.message)
