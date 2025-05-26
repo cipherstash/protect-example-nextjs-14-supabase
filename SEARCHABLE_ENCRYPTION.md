@@ -21,7 +21,9 @@ const { data, error } = await supabase
 
 To work around these limitations, you'll need to:
 
-1. [Grant necessary privileges](https://supabase.com/docs/guides/api/using-custom-schemas) to the required roles:
+1. Go to your Supabase project's [API settings](https://supabase.com/dashboard/project/_/settings/api) and add `eql_v2` schema to "Exposed schemas".
+
+2. [Grant necessary privileges](https://supabase.com/docs/guides/api/using-custom-schemas) to the required roles:
 ```sql
 GRANT USAGE ON SCHEMA eql_v2 TO anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA eql_v2 TO anon, authenticated, service_role;
@@ -32,7 +34,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA eql_v2 GRANT ALL ON ROUTINE
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA eql_v2 GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
 ```
 
-2. Create a custom return type to handle composite type casting:
+3. Create a custom return type to handle composite type casting:
 ```sql
 CREATE TYPE user_with_json_fields AS (
   id integer,
@@ -41,7 +43,7 @@ CREATE TYPE user_with_json_fields AS (
 );
 ```
 
-3. Create a custom Postgres function:
+4. Create a custom Postgres function:
 ```sql
 CREATE OR REPLACE FUNCTION search_user_by_email(val eql_v2_encrypted)
 RETURNS SETOF user_with_json_fields AS $$
@@ -49,7 +51,7 @@ RETURNS SETOF user_with_json_fields AS $$
 $$ LANGUAGE sql;
 ```
 
-4. Use the function via Supabase SDK's RPC method:
+5. Use the function via Supabase SDK's RPC method:
 ```typescript
 // First, encrypt the search value
 const searchResult = await protectClient.encrypt('billy@example.com', {
