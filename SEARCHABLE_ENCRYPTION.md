@@ -2,6 +2,10 @@
 
 When working with encrypted data in Supabase, there are some important considerations to keep in mind, particularly around composite types and custom types with the EQL v2 extension.
 
+> [!NOTE]
+> The following assumes you have installed the [latest version of the EQL v2 extension](https://github.com/cipherstash/encrypt-query-language/releases).
+> You can also install the extension using the [dbdev](https://database.dev/cipherstash/eql) tool.
+
 ## Challenges with Supabase SDK
 
 The Supabase SDK has limitations when working with composite types and custom types. For example, the following approach using the standard `.eq()` function will not work:
@@ -17,9 +21,15 @@ const { data, error } = await supabase
 
 To work around these limitations, you'll need to:
 
-1. Grant necessary privileges to the required roles:
+1. [Grant necessary privileges](https://supabase.com/docs/guides/api/using-custom-schemas) to the required roles:
 ```sql
-GRANT USAGE ON SCHEMA eql_v2 TO postgres, anon, authenticated, service_role, dashboard_user;
+GRANT USAGE ON SCHEMA eql_v2 TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA eql_v2 TO anon, authenticated, service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA eql_v2 TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA eql_v2 TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA eql_v2 GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA eql_v2 GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA eql_v2 GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
 ```
 
 2. Create a custom return type to handle composite type casting:
