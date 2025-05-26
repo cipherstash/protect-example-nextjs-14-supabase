@@ -6,13 +6,14 @@ import type { DecryptedUser } from '../lib/data'
 // CS_NOTE
 // getServerSideProps is used to fetch the users from the database, decrypt them, and pass them to the client component as props
 // This logic is executed on the server side and is required when using CipherStash Protect.
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   try {
-    const users = await getUsers()
+    const users = await getUsers(query.email as string)
 
     return {
       props: {
         users,
+        query,
       },
     }
   } catch (error) {
@@ -20,6 +21,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     return {
       props: {
         users: [],
+        query,
       },
     }
   }
@@ -27,9 +29,10 @@ export const getServerSideProps: GetServerSideProps = async () => {
 
 interface HomeProps {
   users: DecryptedUser[]
+  query: { email?: string }
 }
 
-export default function Home({ users: initialUsers }: HomeProps) {
+export default function Home({ users: initialUsers, query }: HomeProps) {
   const [users, setUsers] = useState(initialUsers)
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -72,6 +75,34 @@ export default function Home({ users: initialUsers }: HomeProps) {
   return (
     <div className="py-24">
       <div className="w-full max-w-2xl space-y-8 mx-auto">
+        <div>
+          <h2 className="text-xl font-bold mb-4">Search Users</h2>
+          <form action="/" method="get" className="space-y-4">
+            <div>
+              <label
+                htmlFor="email-search"
+                className="block text-sm font-medium mb-2"
+              >
+                Search by Email
+              </label>
+              <input
+                id="email-search"
+                type="email"
+                name="email"
+                placeholder="Enter the exact email to search for"
+                className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                defaultValue={(query.email as string) || ''}
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+
         <div>
           <h2 className="text-xl font-bold mb-4">Add User</h2>
           <form onSubmit={handleSubmit} className="space-y-4">

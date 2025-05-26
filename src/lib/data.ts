@@ -25,27 +25,51 @@ export type DecryptedUser = z.infer<typeof decryptedUserSchema>
 // and what will be returned to the client component after decrypting the data.
 //
 // Using a schema parser is optional, but it is recommended to maintain type safety.
-export async function getUsers(): Promise<DecryptedUser[]> {
+export async function getUsers(email?: string): Promise<DecryptedUser[]> {
   try {
-    // TODO: Implement searching for a user by email
-    // const searchResult = await protectClient.encrypt('billy@mycompany.com', {
-    //   column: users.email,
-    //   table: users,
-    // })
+    let data: EncryptedUser[] = []
+    let error: Error | null = null
 
-    // if (searchResult.failure) {
-    //   throw new Error(searchResult.failure.message)
-    // }
+    if (email) {
+      const searchResult = await protectClient.encrypt(email, {
+        column: users.email,
+        table: users,
+      })
 
-    const { data, error } = await supabase
-      .from('users')
-      .select('id, email::jsonb, name::jsonb')
+      if (searchResult.failure) {
+        throw new Error(searchResult.failure.message)
+      }
+
+      // Convieniently, the encrypt method uses the withResult pattern, so the encrypted payload is already wrapped in a "data" property.
+      // This is why we can pass the searchResult directly to the rpc function as Supabase requires the composite type.
+      // ------------------------------------------------------------------------------------------------
+      // Reference the SEARCHABLE_ENCRYPTION.md in the root of the repo for the implementation of `search_user_by_email`
+      const { data: searchData, error: searchError } = await supabase.rpc(
+        'search_user_by_email',
+        {
+          val: searchResult,
+        },
+      )
+
+      data = searchData as EncryptedUser[]
+      error = searchError
+    } else {
+      const { data: searchData, error: searchError } = await supabase
+        .from('users')
+        .select('id, email::jsonb, name::jsonb')
+
+      data = searchData as EncryptedUser[]
+      error = searchError
+    }
 
     if (error) {
       throw new Error(error.message)
     }
 
-    const encryptedUsers = data?.map((user) => encryptedUserSchema.parse(user))
+    const encryptedUsers = data?.map((user: EncryptedUser) =>
+      encryptedUserSchema.parse(user),
+    )
+
     const result =
       await protectClient.bulkDecryptModels<EncryptedUser>(encryptedUsers)
 
