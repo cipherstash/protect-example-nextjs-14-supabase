@@ -87,9 +87,8 @@ export default function Home({ users: initialUsers, query }: HomeProps) {
               </label>
               <input
                 id="email-search"
-                type="email"
                 name="email"
-                placeholder="Enter the exact email to search for"
+                placeholder="Enter the email pattern to search for"
                 className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
                 defaultValue={(query.email as string) || ''}
               />
