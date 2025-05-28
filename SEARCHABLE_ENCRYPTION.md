@@ -19,6 +19,12 @@ const searchResult = await protectClient.encrypt('billy@example.com', {
 const searchTerm = `(${JSON.stringify(JSON.stringify(searchResult.data))})`
 ```
 
+For certain queries, when including the encrypted search term in an operator that uses the string logic syntax, your need to triple stringify the payload.
+
+```typescript
+const searchTerm = `${JSON.stringify(`(${JSON.stringify(JSON.stringify(searchResult.data))})`)}`
+```
+
 ## Query Examples
 
 Here are examples of different ways to search encrypted data using the Supabase SDK:
@@ -39,6 +45,60 @@ const { data, error } = await supabase
   .from('users')
   .select('id, email::jsonb, name::jsonb')
   .like('email', searchTerm)
+```
+
+### IN Operator Search
+
+When you need to search for multiple encrypted values, you can use the IN operator. Each encrypted value needs to be properly formatted and combined:
+
+```typescript
+// Encrypt multiple search terms
+const searchResult1 = await protectClient.encrypt('value1', {
+  column: users.name,
+  table: users,
+})
+
+const searchResult2 = await protectClient.encrypt('value2', {
+  column: users.name,
+  table: users,
+})
+
+// Format each search term
+const searchTerm = `${JSON.stringify(`(${JSON.stringify(JSON.stringify(searchResult.data))})`)}`
+const searchTerm2 = `${JSON.stringify(`(${JSON.stringify(JSON.stringify(searchResult2.data))})`)}`
+
+// Combine terms for IN operator
+const { data, error } = await supabase
+  .from('users')
+  .select('id, email::jsonb, name::jsonb')
+  .filter('name', 'in', `(${searchTerm1},${searchTerm2})`)
+```
+
+### OR Condition Search
+
+You can combine multiple encrypted search conditions using the `.or()` syntax. This is useful when you want to search across multiple encrypted columns:
+
+```typescript
+// Encrypt search terms for different columns
+const emailSearch = await protectClient.encrypt('user@example.com', {
+  column: users.email,
+  table: users,
+})
+
+const nameSearch = await protectClient.encrypt('John', {
+  column: users.name,
+  table: users,
+})
+
+// Format each search term
+const emailTerm = `${JSON.stringify(`(${JSON.stringify(JSON.stringify(emailSearch.data))})`)}`
+const nameTerm = `${JSON.stringify(`(${JSON.stringify(JSON.stringify(nameSearch.data))})`)}`
+
+// Combine conditions with OR
+const { data, error } = await supabase
+  .from('users')
+  .select('id, email::jsonb, name::jsonb')
+  .or(`email.ilike.${emailTerm}, name.ilike.${nameTerm}`)
 ```
 
 ## Conclusion
