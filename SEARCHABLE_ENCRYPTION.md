@@ -19,7 +19,7 @@ const searchResult = await protectClient.encrypt('billy@example.com', {
 const searchTerm = `(${JSON.stringify(JSON.stringify(searchResult.data))})`
 ```
 
-For certain queries, when including the encrypted search term in an operator that uses the string logic syntax, your need to triple stringify the payload.
+For certain queries, when including the encrypted search term with an operator that uses the string logic syntax, your need to triple stringify the payload.
 
 ```typescript
 const searchTerm = `${JSON.stringify(`(${JSON.stringify(JSON.stringify(searchResult.data))})`)}`
@@ -32,6 +32,13 @@ Here are examples of different ways to search encrypted data using the Supabase 
 ### Equality Search
 
 ```typescript
+const searchResult = await protectClient.encrypt('billy@example.com', {
+  column: users.email,
+  table: users,
+})
+
+const searchTerm = `(${JSON.stringify(JSON.stringify(searchResult.data))})`
+
 const { data, error } = await supabase
   .from('users')
   .select('id, email::jsonb, name::jsonb')
@@ -41,6 +48,13 @@ const { data, error } = await supabase
 ### Pattern Matching Search
 
 ```typescript
+const searchResult = await protectClient.encrypt('example.com', {
+  column: users.email,
+  table: users,
+})
+
+const searchTerm = `(${JSON.stringify(JSON.stringify(searchResult.data))})`
+
 const { data, error } = await supabase
   .from('users')
   .select('id, email::jsonb, name::jsonb')
