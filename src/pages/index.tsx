@@ -8,7 +8,7 @@ import type { DecryptedUser } from '../lib/data'
 // This logic is executed on the server side and is required when using CipherStash Protect.
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   try {
-    const users = await getUsers(query.email as string)
+    const users = await getUsers(query.email as string, query.name as string)
 
     return {
       props: {
@@ -29,7 +29,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
 
 interface HomeProps {
   users: DecryptedUser[]
-  query: { email?: string }
+  query: { email?: string; name?: string }
 }
 
 export default function Home({ users: initialUsers, query }: HomeProps) {
@@ -91,6 +91,23 @@ export default function Home({ users: initialUsers, query }: HomeProps) {
                 placeholder="Enter the email pattern to search for"
                 className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
                 defaultValue={(query.email as string) || ''}
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="name-search"
+                className="block text-sm font-medium mb-2"
+              >
+                Search by Name
+              </label>
+              <input
+                id="name-search"
+                name="name"
+                placeholder="Enter the name pattern to search for"
+                className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                defaultValue={(query.name as string) || ''}
+                required
               />
             </div>
             <button

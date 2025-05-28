@@ -10,7 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@cipherstash/protect": "^8.1.0",
+    "@cipherstash/protect": "^8.3.0",
     "@supabase/supabase-js": "^2.49.4",
     "next": "14.2.28",
     "react": "^18",
